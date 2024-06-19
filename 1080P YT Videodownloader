@@ -1,3 +1,17 @@
+
+# Note - If you  facing issue downloading high resolution video, downlod Audio video seperately and merge by using FFMPEG.exe (Download ffmpeg.exe ) And code below mentioned and save this in Note pad.pat and run Audio and video will be merged.
+
+
+ffmpeg -i V.mp4 -i A.mp3^
+ -c copy vmerged.mp4
+
+
+
+
+
+
+
+
 import os
 from pytube import YouTube
 from moviepy.editor import VideoFileClip, AudioFileClip
