@@ -1,0 +1,55 @@
+import os
+from pytube import YouTube
+from moviepy.editor import VideoFileClip, AudioFileClip
+
+def download_youtube_video(url, resolution="1080p"):
+    yt = YouTube(url)
+    video_title = yt.title
+    sanitized_title = "".join([c if c.isalnum() else "_" for c in video_title])
+
+    # List available video streams
+    print("Available video streams:")
+    video_streams = yt.streams.filter(progressive=False, file_extension='mp4', type='video')
+    for stream in video_streams:
+        print(f"Resolution: {stream.resolution}, FPS: {stream.fps}, Type: {stream.mime_type}")
+
+    # Attempt to get the desired video stream
+    video_stream = yt.streams.filter(progressive=False, file_extension='mp4', res=resolution).first()
+    if not video_stream:
+        print(f"No video stream available with resolution {resolution}. Please select a different resolution or try another video.")
+        return
+    
+    audio_stream = yt.streams.filter(only_audio=True, file_extension='mp4').first()
+    if not audio_stream:
+        print("No audio stream available. Please try another video.")
+        return
+
+    video_file = f"{sanitized_title}_video.mp4"
+    audio_file = f"{sanitized_title}_audio.mp4"
+
+    print("Downloading video...")
+    video_stream.download(filename=video_file)
+    print("Video downloaded!")
+
+    print("Downloading audio...")
+    audio_stream.download(filename=audio_file)
+    print("Audio downloaded!")
+
+    video_clip = VideoFileClip(video_file)
+    audio_clip = AudioFileClip(audio_file)
+    final_clip = video_clip.set_audio(audio_clip)
+
+    fps = video_clip.fps
+    output_file = f"{sanitized_title}.mp4"
+
+    print(f"Moviepy - Building video {output_file}.")
+    final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac", fps=fps)
+
+    os.remove(video_file)
+    os.remove(audio_file)
+    print(f"Moviepy - Done writing video {output_file}.")
+
+# Example usage
+if __name__ == "__main__":
+    video_url = input("Please enter the YouTube video URL: ")
+    download_youtube_video(video_url, resolution="1080p")
